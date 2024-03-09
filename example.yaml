@@ -1,0 +1,50 @@
+esphome:
+  name: example
+  platform: ESP32
+  board: esp32dev
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Example Fallback Hotspot"
+    password: "7zJ6kKX5Vmeq"
+
+captive_portal:
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "bb8ac6038a3c84fa9bbeed3cb6fc3617"
+
+i2c:
+  sda: 21
+  scl: 22
+
+external_components:
+  source: D:\Dev\esphome-vcnl4010\components
+  components: [vcnl4010_i2c_sensor]
+
+sensor:
+  - platform: vcnl4010_i2c_sensor
+    update_interval: 1s
+    proximity:
+      name: VCNL4010 proximity sensor
+      id: prox
+
+binary_sensor:
+  - platform: template
+    name: VCNL4010 proximity threshold
+    lambda: !lambda |-
+      if (id(prox).state > 10000) {
+        return true;
+      } else {
+        return false;
+      }
