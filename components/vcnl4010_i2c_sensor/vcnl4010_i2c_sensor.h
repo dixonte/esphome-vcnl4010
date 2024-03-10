@@ -50,6 +50,8 @@ namespace esphome {
 
     class Vcnl4010I2CSensor : public sensor::Sensor, public PollingComponent, public i2c::I2CDevice {
       public:
+        void loop() override;
+
         void setup() override;
         void update() override;
         void dump_config() override;
@@ -61,11 +63,16 @@ namespace esphome {
         sensor::Sensor *proximity_sensor_{nullptr};
         sensor::Sensor *ambient_sensor_{nullptr};
 
+        uint8_t status;
+
         void setLEDcurrent(uint8_t current_10mA);
         uint8_t getLEDcurrent(void);
         void setFrequency(_vcnl4010_freq freq);
-        uint16_t readProximity(void);
-        uint16_t readAmbient(void);
+
+        void requestProximity(void);
+        void requestAmbient(void);
+        bool tryGetProximity(uint16_t *val);
+        bool tryGetAmbient(uint16_t *val);
 
         uint16_t read_register16(uint8_t address);
 

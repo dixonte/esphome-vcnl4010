@@ -5,6 +5,7 @@ namespace esphome {
     namespace vcnl4010_i2c_sensor {
 
         static const char *TAG = "vcnl4010_i2c_sensor.sensor";
+        uint8_t status;
 
         void Vcnl4010I2CSensor::setup() {
             ESP_LOGCONFIG(TAG, "Setting up VCNL4010...");
@@ -19,18 +20,39 @@ namespace esphome {
             this->setFrequency(_VCNL4010_16_625); // 16.625 readings/second
 
             this->regIntControl = 0x08;
+
+            this->status = 0;
+        }
+
+        void Vcnl4010I2CSensor::loop() {
+            if (this->status == _VCNL4010_MEASUREPROXIMITY) {
+                uint16_t prox;
+                if (this->tryGetProximity(&prox)) {
+                    this->proximity_sensor_->publish_state(prox);
+
+                    this->status = 0;
+                    if (this->ambient_sensor_ != nullptr) {
+                        this->requestAmbient();
+                    }
+                }
+            }
+
+            if (this->status == _VCNL4010_MEASUREAMBIENT) {
+                uint16_t amb;
+                if (this->tryGetAmbient(&amb)) {
+                    this->ambient_sensor_->publish_state(amb);
+
+                    this->status = 0;
+                }
+            }
         }
 
         void Vcnl4010I2CSensor::update() {
             if (this->proximity_sensor_ != nullptr) {
-                uint16_t prox = this->readProximity();
-                ESP_LOGD(TAG, "Got proximity=%d", prox);
-                this->proximity_sensor_->publish_state(prox);
+                this->requestProximity();
             }
-            if (this->ambient_sensor_ != nullptr) {
-                uint16_t amb = this->readAmbient();
-                ESP_LOGD(TAG, "Got ambient=%d", amb);
-                this->ambient_sensor_->publish_state(amb);
+            else if (this->ambient_sensor_ != nullptr) {
+                this->requestAmbient();
             }
         }
 
@@ -60,37 +82,48 @@ namespace esphome {
             this->regProductID = freq;
         }
 
-        uint16_t Vcnl4010I2CSensor::readProximity(void) {
-            uint8_t i = this->regIntStat.get();
-            i &= ~0x80;
-            this->regIntStat = i;
+        void Vcnl4010I2CSensor::requestProximity(void) {
+            if (this->status == 0) {
+                uint8_t i = this->regIntStat.get();
+                i &= ~0x80;
+                this->regIntStat = i;
 
-            this->regCommand = _VCNL4010_MEASUREPROXIMITY;
-            while (1) {
-                uint8_t result = this->regCommand.get();
-
-                if (result & _VCNL4010_PROXIMITYREADY) {
-                    return this->read_register16(_VCNL4010_PROXIMITYDATA);
-                }
-                delay(1);
+                this->regCommand = _VCNL4010_MEASUREPROXIMITY;
+                this->status = _VCNL4010_MEASUREPROXIMITY;
             }
-
-            return 0;
         }
 
-        uint16_t Vcnl4010I2CSensor::readAmbient(void) {
-            uint8_t i = this->regIntStat.get();
-            i &= ~0x80;
-            this->regIntStat = i;
+        void Vcnl4010I2CSensor::requestAmbient(void) {
+            if (this->status == 0) {
+                uint8_t i = this->regIntStat.get();
+                i &= ~0x80;
+                this->regIntStat = i;
 
-            this->regCommand = _VCNL4010_MEASUREAMBIENT;
-            while (1) {
-                uint8_t result = this->regCommand.get();
-                if (result & _VCNL4010_AMBIENTREADY) {
-                    return this->read_register16(_VCNL4010_AMBIENTDATA);
-                }
-                delay(1);
+                this->regCommand = _VCNL4010_MEASUREAMBIENT;
+                this->status = _VCNL4010_MEASUREAMBIENT;
             }
+        }
+
+        bool Vcnl4010I2CSensor::tryGetProximity(uint16_t *val) {
+            uint8_t result = this->regCommand.get();
+            if (result & _VCNL4010_PROXIMITYREADY) {
+                uint16_t prox = this->read_register16(_VCNL4010_PROXIMITYDATA);
+                ESP_LOGD(TAG, "Got proximity=%d", prox);
+                *val = prox;
+                return true;
+            }
+            return false;
+        }
+
+        bool Vcnl4010I2CSensor::tryGetAmbient(uint16_t *val) {
+            uint8_t result = this->regCommand.get();
+            if (result & _VCNL4010_AMBIENTREADY) {
+                uint16_t amb = this->read_register16(_VCNL4010_AMBIENTDATA);
+                ESP_LOGD(TAG, "Got ambient=%d", amb);
+                *val = amb;
+                return true;
+            }
+            return false;
         }
 
         // Read 2 bytes from VCNL4010 at address
