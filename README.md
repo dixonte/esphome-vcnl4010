@@ -31,4 +31,4 @@ Depending on your microcontroller of choice, you may be able to use different pi
 
 Thanks to [this project](https://github.com/jesserockz/esphome-external-component-examples/) without which I would have had a much harder time getting started.
 
-Very special thanks to Adafruit, whose [Arduino library](https://github.com/adafruit/Adafruit_VCNL4010) I referenced when creating this component.
+Very special thanks to Adafruit, whose [VCNL4010 library](https://github.com/adafruit/Adafruit_VCNL4010) I referenced when creating this component.
