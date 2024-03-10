@@ -7,6 +7,7 @@ from esphome.const import (
 )
 
 CONF_PROXIMITY = 'proximity'
+CONF_AMBIENT = 'ambient'
 
 DEPENDENCIES = ['i2c']
 
@@ -19,7 +20,11 @@ CONFIG_SCHEMA = (
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(Vcnl4010I2CSensor),
-            cv.Optional("proximity"): sensor.sensor_schema(
+            cv.Optional(CONF_PROXIMITY): sensor.sensor_schema(
+                unit_of_measurement=UNIT_EMPTY,
+                accuracy_decimals=1
+            ),
+            cv.Optional(CONF_AMBIENT): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 accuracy_decimals=1
             ),
@@ -30,22 +35,14 @@ CONFIG_SCHEMA = (
 )
 
 async def to_code(config):
-    # cg.add_library(
-    #     name="Adafruit BusIO",
-    #     repository="https://github.com/adafruit/Adafruit_BusIO",
-    #     version="1.15.0"
-    # )
-    # cg.add_library(
-    #     name="Adafruit VCNL",
-    #     repository="https://github.com/adafruit/Adafruit_VCNL4010",
-    #     version="1.1.2"
-    # )
-
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
-    #await sensor.register_sensor(var, config)
     await i2c.register_i2c_device(var, config)
 
     if CONF_PROXIMITY in config:
         sens = await sensor.new_sensor(config[CONF_PROXIMITY])
         cg.add(var.set_proximity_sensor(sens))
+
+    if CONF_AMBIENT in config:
+        sens = await sensor.new_sensor(config[CONF_AMBIENT])
+        cg.add(var.set_ambient_sensor(sens))

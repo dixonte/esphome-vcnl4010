@@ -38,6 +38,8 @@ sensor:
     proximity:
       name: VCNL4010 proximity sensor
       id: prox
+    ambient:
+      name: VCNL4010 ambient sensor
 
 binary_sensor:
   - platform: template
