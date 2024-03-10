@@ -3,7 +3,10 @@ import esphome.config_validation as cv
 from esphome.components import i2c, sensor
 from esphome.const import (
     CONF_ID,
-    UNIT_EMPTY
+    UNIT_EMPTY,
+    DEVICE_CLASS_DISTANCE,
+    DEVICE_CLASS_ILLUMINANCE,
+    STATE_CLASS_MEASUREMENT
 )
 
 CONF_PROXIMITY = 'proximity'
@@ -22,11 +25,15 @@ CONFIG_SCHEMA = (
             cv.GenerateID(): cv.declare_id(Vcnl4010I2CSensor),
             cv.Optional(CONF_PROXIMITY): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
-                accuracy_decimals=1
+                accuracy_decimals=1,
+                device_class=DEVICE_CLASS_DISTANCE,
+                state_class=STATE_CLASS_MEASUREMENT
             ),
             cv.Optional(CONF_AMBIENT): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
-                accuracy_decimals=1
+                accuracy_decimals=1,
+                device_class=DEVICE_CLASS_ILLUMINANCE,
+                state_class=STATE_CLASS_MEASUREMENT
             ),
         }
     )
