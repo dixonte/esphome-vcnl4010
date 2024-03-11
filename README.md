@@ -1,6 +1,6 @@
-# ![ESPHome logo](esphome-logo.png) VCNL4010 custom component
+# ![ESPHome logo](esphome-logo.png) VCNL4010 external component
 
-A good-enough-for-me custom component to read the VCNL4010 proximity sensor and present its values to ESPHome.
+A good-enough-for-me external component to read the VCNL4010 proximity sensor and present its values to ESPHome.
 
 # Usage
 You can find a full example in this repository, [example.yaml](example.yaml). However, you will need to change the `source:` as I use this file for local development.
