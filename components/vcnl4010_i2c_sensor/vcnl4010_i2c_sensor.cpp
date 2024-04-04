@@ -79,7 +79,7 @@ namespace esphome {
         }
 
         void Vcnl4010I2CSensor::setFrequency(_vcnl4010_freq freq) {
-            this->regProductID = freq;
+            this->regProxRate = freq;
         }
 
         void Vcnl4010I2CSensor::requestProximity(void) {
