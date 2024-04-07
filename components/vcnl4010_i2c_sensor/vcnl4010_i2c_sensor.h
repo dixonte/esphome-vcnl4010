@@ -22,18 +22,6 @@
 #define _VCNL4010_INTSTAT 0x8E          ///< Interrupt status
 #define _VCNL4010_MODTIMING 0x8F ///< Proximity modulator timing adjustment
 
-/** Proximity measurement rate */
-typedef enum {
-  _VCNL4010_1_95 = 0,    // 1.95     measurements/sec (Default)
-  _VCNL4010_3_90625 = 1, // 3.90625  measurements/sec
-  _VCNL4010_7_8125 = 2,  // 7.8125   measurements/sec
-  _VCNL4010_16_625 = 3,  // 16.625   measurements/sec
-  _VCNL4010_31_25 = 4,   // 31.25    measurements/sec
-  _VCNL4010_62_5 = 5,    // 62.5     measurements/sec
-  _VCNL4010_125 = 6,     // 125      measurements/sec
-  _VCNL4010_250 = 7,     // 250      measurements/sec
-} _vcnl4010_freq;
-
 /** Values for command register */
 #define _VCNL4010_MEASUREPROXIMITY                                              \
   0x08 ///< Start a single on-demand proximity measurement
@@ -46,6 +34,20 @@ typedef enum {
        ///< available
 
 namespace esphome {
+  namespace vcnl4010_freq {
+    /** Proximity measurement rate */
+    typedef enum {
+      mps1_95 = 0,    // 1.95     measurements/sec (Default)
+      mps3_90625 = 1, // 3.90625  measurements/sec
+      mps7_8125 = 2,  // 7.8125   measurements/sec
+      mps16_625 = 3,  // 16.625   measurements/sec
+      mps31_25 = 4,   // 31.25    measurements/sec
+      mps62_5 = 5,    // 62.5     measurements/sec
+      mps125 = 6,     // 125      measurements/sec
+      mps250 = 7,     // 250      measurements/sec
+    } _vcnl4010_freq;
+  }
+
   namespace vcnl4010_i2c_sensor {
 
     class Vcnl4010I2CSensor : public sensor::Sensor, public PollingComponent, public i2c::I2CDevice {
@@ -59,15 +61,18 @@ namespace esphome {
         void set_proximity_sensor(sensor::Sensor *proximity_sensor) { proximity_sensor_ = proximity_sensor; }
         void set_ambient_sensor(sensor::Sensor *ambient_sensor) { ambient_sensor_ = ambient_sensor; }
       
+        void set_led_target_current(uint8_t current_10mA);
+        void set_frequency(vcnl4010_freq::_vcnl4010_freq freq);
+
       protected:
         sensor::Sensor *proximity_sensor_{nullptr};
         sensor::Sensor *ambient_sensor_{nullptr};
 
         uint8_t status;
+        uint8_t ledTargetCurrent;
 
         void setLEDcurrent(uint8_t current_10mA);
         uint8_t getLEDcurrent(void);
-        void setFrequency(_vcnl4010_freq freq);
 
         void requestProximity(void);
         void requestAmbient(void);

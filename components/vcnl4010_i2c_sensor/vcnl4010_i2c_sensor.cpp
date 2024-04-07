@@ -5,7 +5,6 @@ namespace esphome {
     namespace vcnl4010_i2c_sensor {
 
         static const char *TAG = "vcnl4010_i2c_sensor.sensor";
-        uint8_t status;
 
         void Vcnl4010I2CSensor::setup() {
             ESP_LOGCONFIG(TAG, "Setting up VCNL4010...");
@@ -16,8 +15,7 @@ namespace esphome {
                 ESP_LOGE(TAG, "Could not set up VCNL4010, revision mismatch!");
             }
 
-            this->setLEDcurrent(20); // 200 mA
-            this->setFrequency(_VCNL4010_16_625); // 16.625 readings/second
+            this->setLEDcurrent(0);
 
             this->regIntControl = 0x08;
 
@@ -66,24 +64,33 @@ namespace esphome {
             LOG_SENSOR("  ", "Ambient", this->ambient_sensor_);
         }
 
+        void Vcnl4010I2CSensor::set_led_target_current(uint8_t current_10mA) {
+            this->ledTargetCurrent = current_10mA;
+            ESP_LOGD(TAG, "LED target current set to %d mA", current_10mA * 10);
+        }
+
+        void Vcnl4010I2CSensor::set_frequency(vcnl4010_freq::_vcnl4010_freq freq) {
+            this->regProxRate = freq;
+            ESP_LOGD(TAG, "Frequency set to %d", freq);
+        }
+
 
 
         void Vcnl4010I2CSensor::setLEDcurrent(uint8_t current_10mA) {
             if (current_10mA > 20)
                 current_10mA = 20;
             this->regIRLED = current_10mA;
+            ESP_LOGD(TAG, "LED current set to %d mA", current_10mA * 10);
         }
 
         uint8_t Vcnl4010I2CSensor::getLEDcurrent(void) { 
             return this->regIRLED.get();
         }
 
-        void Vcnl4010I2CSensor::setFrequency(_vcnl4010_freq freq) {
-            this->regProxRate = freq;
-        }
-
         void Vcnl4010I2CSensor::requestProximity(void) {
             if (this->status == 0) {
+                this->setLEDcurrent(this->ledTargetCurrent);
+
                 uint8_t i = this->regIntStat.get();
                 i &= ~0x80;
                 this->regIntStat = i;
@@ -110,6 +117,7 @@ namespace esphome {
                 uint16_t prox = this->read_register16(_VCNL4010_PROXIMITYDATA);
                 ESP_LOGD(TAG, "Got proximity=%d", prox);
                 *val = prox;
+                this->setLEDcurrent(0);
                 return true;
             }
             return false;
