@@ -1,9 +1,5 @@
 #pragma once
 
-//#include "Adafruit_VCNL4010.h"
-#include <Arduino.h>
-#include <Wire.h>
-
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/i2c/i2c.h"

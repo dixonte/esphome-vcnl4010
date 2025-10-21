@@ -1,7 +1,10 @@
 esphome:
   name: example
-  platform: ESP32
+
+esp32:
   board: esp32dev
+  framework:
+    type: esp-idf
 
 wifi:
   ssid: !secret wifi_ssid
@@ -22,14 +25,15 @@ logger:
 api:
 
 ota:
-  password: "bb8ac6038a3c84fa9bbeed3cb6fc3617"
+  - platform: esphome
+    password: "bb8ac6038a3c84fa9bbeed3cb6fc3617"
 
 i2c:
   sda: 21
   scl: 22
 
 external_components:
-  source: D:\Dev\esphome-vcnl4010\components
+  source: ~/Dev/esphome-vcnl4010/components
   components: [vcnl4010_i2c_sensor]
 
 sensor:

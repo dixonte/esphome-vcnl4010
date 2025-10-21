@@ -137,7 +137,7 @@ namespace esphome {
         // Read 2 bytes from VCNL4010 at address
         uint16_t Vcnl4010I2CSensor::read_register16(uint8_t address) {
             uint8_t buffer[2] = {0,0};
-            this->read_register(address, buffer, 2, true);
+            this->read_register(address, buffer, 2);
             return (uint16_t(buffer[0]) << 8) | uint16_t(buffer[1]);
         }
     }  // namespace Vcnl4010I2CSensor
